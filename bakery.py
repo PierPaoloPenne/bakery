@@ -1,22 +1,50 @@
-"""
-Sweet Surrender Bakery - Simple Ingredient Inventory Management System
-A basic Python program to help manage bakery ingredient inventory using dictionaries
-"""
+# Sweet Surrender Bakery Inventory Management System
+# A simple but effective tool for tracking ingredient inventory
 
-# Simple dictionary to store ingredients - no file saving needed for this basic version
+# Global dictionary to store all ingredient information
 ingredients = {}
 
+def display_welcome():
+    """Display a friendly welcome message when the program starts"""
+    print("\n" + "="*50)
+    print("Welcome to Sweet Surrender Bakery Inventory System!")
+    print("="*50)
+    print("This system will help you track your ingredient inventory")
+    print("easily and reliably. Let's get started!\n")
+
+def display_menu():
+    """Show the main menu options clearly"""
+    print("="*50)
+    print("Sweet Surrender Bakery - Inventory System")
+    print("="*50)
+    print("1. Add New Ingredient")
+    print("2. View All Ingredients")
+    print("3. Search for Ingredient")
+    print("4. Update Ingredient Quantity")
+    print("5. Exit")
+    print("="*50)
+
 def add_ingredient():
-    """Add a new ingredient to the inventory"""
+    """Add a new ingredient to the inventory system"""
     print("\n--- Add New Ingredient ---")
     
-    # Get ingredient name
-    name = input("Enter ingredient name: ").strip().lower()
+    # Get ingredient name with validation
+    name = input("Enter ingredient name: ").strip()
     if not name:
         print("Error: Ingredient name cannot be empty!")
         return
     
-    # Get quantity
+    # Check if ingredient already exists
+    if name.lower() in [existing_name.lower() for existing_name in ingredients.keys()]:
+        print(f"Ingredient '{name}' already exists in inventory!")
+        choice = input("Would you like to update its quantity instead? (y/n): ").lower()
+        if choice == 'y':
+            update_ingredient()
+            return
+        else:
+            return
+    
+    # Get quantity with validation
     try:
         quantity = float(input("Enter quantity: "))
         if quantity <= 0:
@@ -26,61 +54,98 @@ def add_ingredient():
         print("Error: Please enter a valid number for quantity!")
         return
     
-    # Get unit
+    # Get unit of measurement
     unit = input("Enter unit (kg, litres, pieces, etc.): ").strip()
     if not unit:
         print("Error: Unit cannot be empty!")
         return
     
-    # Add to dictionary
-    ingredients[name] = {'quantity': quantity, 'unit': unit}
+    # Store the ingredient in our database
+    ingredients[name] = {"quantity": quantity, "unit": unit}
     print(f"✓ Added: {name.title()} - {quantity} {unit}")
 
 def view_all_ingredients():
-    """Display all ingredients in the inventory"""
-    print("\n--- All Ingredients ---")
+    """Display all ingredients in a nice, organized table"""
+    print("\n--- Current Inventory ---")
     
     if not ingredients:
         print("No ingredients in inventory yet.")
+        print("Use option 1 to add some ingredients!")
         return
     
-    print(f"{'Ingredient':<15} {'Quantity':<10} {'Unit'}")
-    print("-" * 35)
+    # Create a formatted table header
+    print("-" * 60)
+    print(f"{'Ingredient':<20} {'Quantity':<15} {'Unit':<10}")
+    print("-" * 60)
     
-    # Loop through dictionary and display each ingredient
+    # Display each ingredient in a formatted row
     for name, details in ingredients.items():
-        print(f"{name.title():<15} {details['quantity']:<10} {details['unit']}")
+        print(f"{name.title():<20} {details['quantity']:<15} {details['unit']:<10}")
+    
+    print("-" * 60)
+    print(f"Total ingredients in inventory: {len(ingredients)}")
 
 def search_ingredient():
-    """Search for a specific ingredient"""
-    print("\n--- Search Ingredient ---")
+    """Search for a specific ingredient by name"""
+    print("\n--- Search for Ingredient ---")
     
-    name = input("Enter ingredient name to search: ").strip().lower()
-    if not name:
-        print("Error: Please enter an ingredient name!")
+    if not ingredients:
+        print("No ingredients in inventory to search through.")
         return
     
-    # Check if ingredient exists in dictionary
-    if name in ingredients:
-        ingredient = ingredients[name]
-        print(f"Found: {name.title()}")
-        print(f"Quantity: {ingredient['quantity']} {ingredient['unit']}")
+    search_term = input("Enter ingredient name to search for: ").strip().lower()
+    if not search_term:
+        print("Error: Please enter a search term!")
+        return
+    
+    # Look for ingredients that match the search term
+    found_ingredients = []
+    for name, details in ingredients.items():
+        if search_term in name.lower():
+            found_ingredients.append((name, details))
+    
+    # Display results
+    if found_ingredients:
+        print(f"\n--- Search Results for '{search_term}' ---")
+        print("-" * 50)
+        for name, details in found_ingredients:
+            print(f"Found: {name.title()}")
+            print(f"Quantity: {details['quantity']} {details['unit']}")
+            print("-" * 50)
     else:
-        print(f"Ingredient '{name}' not found in inventory.")
+        print(f"No ingredients found matching '{search_term}'")
+        print("Try checking your spelling or searching for part of the name.")
 
 def update_ingredient():
     """Update the quantity of an existing ingredient"""
     print("\n--- Update Ingredient Quantity ---")
     
-    name = input("Enter ingredient name to update: ").strip().lower()
-    if not name:
+    if not ingredients:
+        print("No ingredients in inventory to update.")
+        return
+    
+    # Get the ingredient name to update
+    name_to_update = input("Enter name of ingredient to update: ").strip()
+    if not name_to_update:
         print("Error: Please enter an ingredient name!")
         return
     
-    # Check if ingredient exists
-    if name not in ingredients:
-        print(f"Ingredient '{name}' not found in inventory.")
+    # Find the ingredient (case-insensitive search)
+    actual_name = None
+    for existing_name in ingredients.keys():
+        if existing_name.lower() == name_to_update.lower():
+            actual_name = existing_name
+            break
+    
+    if not actual_name:
+        print(f"Error: Ingredient '{name_to_update}' not found in inventory!")
+        print("Use option 3 to search for ingredients, or option 2 to view all.")
         return
+    
+    # Show current quantity
+    current_quantity = ingredients[actual_name]['quantity']
+    current_unit = ingredients[actual_name]['unit']
+    print(f"Current quantity of {actual_name.title()}: {current_quantity} {current_unit}")
     
     # Get new quantity
     try:
@@ -92,36 +157,20 @@ def update_ingredient():
         print("Error: Please enter a valid number!")
         return
     
-    # Update the quantity
-    old_quantity = ingredients[name]['quantity']
-    ingredients[name]['quantity'] = new_quantity
+    # Update the ingredient
+    old_quantity = ingredients[actual_name]['quantity']
+    ingredients[actual_name]['quantity'] = new_quantity
     
-    print(f"✓ Updated {name.title()}: {old_quantity} → {new_quantity} {ingredients[name]['unit']}")
-
-def display_menu():
-    """Display the main menu"""
-    print("\n" + "="*40)
-    print("Sweet Surrender Bakery - Inventory System")
-    print("="*40)
-    print("1. Add New Ingredient")
-    print("2. View All Ingredients") 
-    print("3. Search for Ingredient")
-    print("4. Update Ingredient Quantity")
-    print("5. Exit")
-    print("="*40)
+    print(f"✓ Updated {actual_name.title()}: {old_quantity} → {new_quantity} {current_unit}")
 
 def main():
-    """Main program that runs the inventory system"""
-    print("Welcome to Sweet Surrender Bakery Inventory System!")
+    """Main program function that runs everything"""
+    display_welcome()
     
-    # Main program loop
     while True:
         display_menu()
-        
-        # Get user choice
         choice = input("Enter your choice (1-5): ").strip()
         
-        # Handle each menu option using if-elif statements
         if choice == '1':
             add_ingredient()
         elif choice == '2':
@@ -131,14 +180,18 @@ def main():
         elif choice == '4':
             update_ingredient()
         elif choice == '5':
-            print("Thank you for using the inventory system!")
+            print("\n" + "="*40)
+            print("Thank you for using Sweet Surrender")
+            print("Bakery Inventory System!")
+            print("Have a wonderful day of baking!")
+            print("="*40)
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 5.")
+            print("Error: Please enter a number between 1 and 5.")
         
-        # Wait before showing menu again
+        # Pause
         input("\nPress Enter to continue...")
 
-# Run the program
+# Start the program
 if __name__ == "__main__":
     main()
